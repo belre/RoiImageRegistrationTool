@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="Shift-JIS" ?>
+
+<Setting Name="Test Pattern">
+	<Head>
+		<Update>201/04/05 8:36</Update>
+		<Format>1</Format>
+		<Number>1</Number>
+	</Head>
+	<Measures>
+		<Measure ID="2">
+			<Name>全体倍率L</Name>
+			<Coord>1</Coord>
+			<Results>
+				<Result Name="長さ">
+					<Unit>mm</Unit>
+					<Valid-fig>-3</Valid-fig>
+					<Std-lower>229.8</Std-lower>
+					<Std-upper>230.2</Std-upper>
+				</Result>
+			</Results>
+			<Regions>
+				<Region ID="2">
+					<Coord.LT.x>3.0</Coord.LT.x>
+					<Coord.LT.y>3.0</Coord.LT.y>
+					<Coord.Width>6.0</Coord.Width>
+					<Coord.Height>6.0</Coord.Height>
+					<DetColor>0</DetColor>
+					<Feature-params>
+						<SearchDirX>0</SearchDirX>
+						<SearchDirY>0</SearchDirY>
+						<Logic>1</Logic>
+					</Feature-params>
+				</Region>
+				<Region ID="2">
+					<Coord.LT.x>3.0</Coord.LT.x>
+					<Coord.LT.y>231.0</Coord.LT.y>
+					<Coord.Width>6.0</Coord.Width>
+					<Coord.Height>8.0</Coord.Height>
+					<DetColor>0</DetColor>
+					<Feature-params>
+						<SearchDirX>0</SearchDirX>
+						<SearchDirY>0</SearchDirY>
+						<Logic>1</Logic>
+					</Feature-params>
+				</Region>
+			</Regions>
+		</Measure>
+	</Measures>
+</Setting>
