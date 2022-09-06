@@ -1,0 +1,360 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+             xmlns:local="clr-namespace:ClipXmlReader.ViewModel"
+             xmlns:refctrl ="clr-namespace:ClipXmlReader.View"
+             x:Class="ClipXmlReader.View.ImageViewerGui" 
+             xmlns:b="clr-namespace:ClipXmlReader.Behaviors"
+             xmlns:system="clr-namespace:System;assembly=mscorlib"
+             mc:Ignorable="d" Height="369" Width="515"
+             x:Name="ImageGui">
+
+    <UserControl.DataContext>
+        <local:ImageViewerGuiViewModel />
+    </UserControl.DataContext>
+
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolVisibilityConverter" />
+        <ItemsPanelTemplate x:Key="MenuTPL">
+            <StackPanel Margin="-30,0,-30,0" Background="White"/>
+        </ItemsPanelTemplate>
+
+        <!--
+        面倒なのでstatic resourceで定義しておく。
+        ViewModelにも同様のパラメータがあるので編集に注意
+        -->
+        <Style TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Type ScrollBar}}">
+            <Style.Resources>
+                <system:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">20</system:Double>
+                <system:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">20</system:Double>
+                <system:Double x:Key="{x:Static SystemParameters.HorizontalScrollBarHeightKey}">20</system:Double>
+                <system:Double x:Key="{x:Static SystemParameters.HorizontalScrollBarButtonWidthKey}">20</system:Double>
+            </Style.Resources>
+        </Style>
+    </UserControl.Resources>
+
+
+
+    <DockPanel>
+        <WrapPanel x:Name="ui_top_wrappanel" Margin="0,0,0,0" DockPanel.Dock="Top">
+            <WrapPanel>
+                <TextBlock Text="File" Margin="5,0,0,0" />
+                <ComboBox Width="178" Margin="5,0,0,0" ItemsSource="{Binding ImageFilePathList}"
+                      SelectedItem="{Binding CurrentImageFilePath, Mode=TwoWay}" />
+                <Button x:Name="ui_ReferDirectoryButton" Content="..." Margin="5,0,0,0" Click="ui_ReferDirectoryButton_Click" />
+                <Line StrokeThickness="2" Y1="0" Y2="20" Stroke="LightBlue" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            </WrapPanel>
+            <WrapPanel>
+                <TextBlock Text="Zoom" Margin="5,0,0,0" />
+                <TextBlock Text="x 1/" Margin="5,0,0,0" />
+                <TextBox x:Name="ui_zoomtextbox" Text="{Binding ZoomValue, UpdateSourceTrigger=Explicit}" Width="60" Margin="5,0,0,0" KeyDown="ui_ExplicitTextBox_KeyDown" PreviewTextInput="ui_OrientXTextBox_PreviewTextInput"/>
+                <Line StrokeThickness="2" Y1="0" Y2="20" Stroke="LightBlue" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            </WrapPanel>
+            <WrapPanel>
+                <CheckBox Content="View 1st Origin" Margin="5,0,0,0" IsChecked="{Binding IsViewedOriented, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Set" Margin="5,0,0,0" Command="{Binding CommandSetOrigin}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <CheckBox Content="View 2nd Origin" Margin="5,0,0,0" IsChecked="{Binding IsViewedSecondOriented, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <Button Content="Set" Margin="5,0,0,0" Command="{Binding CommandSetSecondOrigin}"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Line StrokeThickness="2" Y1="0" Y2="20" Stroke="LightBlue" Margin="5,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                <Button x:Name="button_trim" Content="Trim" Margin="5,0,0,0" Click="button_trim_Click" />
+            </WrapPanel>
+
+        </WrapPanel>
+
+        <Grid DockPanel.Dock="Top">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="20" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50" />
+                <ColumnDefinition Width="307*" />
+                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="124*"/>
+                <ColumnDefinition Width="20" />
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer x:Name="ui_scrollviewer_horzguide" Grid.Row="0" Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled" Grid.ColumnSpan="3" ScrollChanged="ui_scrollviewer_horzguide_ScrollChanged"  >
+                <i:Interaction.Behaviors>
+                    <b:ScrollSyncronizingBehavior ScrollGroup="Group1" Orientation="Horizontal" />
+                </i:Interaction.Behaviors>
+                <DockPanel Width="{Binding ActualWidth, ElementName=ImageBox}">
+                    <refctrl:ImageHorizontalScaler x:Name="ui_HorizontalScalar" Margin="0,0,0,0" Width="auto" DockPanel.Dock="Top" DataContext="{Binding ViewModelHorizontalImageScaler}" />
+                </DockPanel>
+            </ScrollViewer>
+
+            <ScrollViewer Grid.Row="1" Grid.Column="0" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Hidden" >
+                <i:Interaction.Behaviors>
+                    <b:ScrollSyncronizingBehavior ScrollGroup="Group2" Orientation="Vertical" />
+                </i:Interaction.Behaviors>
+                <DockPanel Height="{Binding ActualHeight, ElementName=ImageBox}">
+                    <refctrl:ImageVerticalScaler x:Name="ui_VerticalScalar" MouseDown="ImageVerticalScaler_MouseDown" DataContext="{Binding ViewModelVerticalImageScaler}" />
+                </DockPanel>
+            </ScrollViewer>
+
+
+            <!--
+                          HorizontalScrollBarVisibility="{Binding ScrollbarControl}" VerticalScrollBarVisibility="{Binding ScrollbarControl}"
+
+            -->
+            <ScrollViewer Grid.Row="1" Grid.Column="1" MouseDown="ScrollViewer_MouseDown" PreviewMouseWheel="ScrollViewer_PreviewMouseWheel" 
+                          MouseUp="ScrollViewer_MouseUp" MouseMove="ScrollViewer_MouseMove" 
+                          x:Name="ui_scrollviewer"
+                          Margin="0,0,0,0"
+                          Grid.ColumnSpan="4" Grid.RowSpan="2" ScrollChanged="ui_scrollviewer_ScrollChanged"
+                          HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"
+                          Visibility="{Binding IsViewImageControl, Converter={StaticResource BoolVisibilityConverter}}"
+                          >
+
+                <i:Interaction.Behaviors>
+                    <b:ScrollSyncronizingBehavior ScrollGroup="Group1" Orientation="Horizontal" />
+                    <b:ScrollSyncronizingBehavior ScrollGroup="Group2" Orientation="Vertical" />
+                </i:Interaction.Behaviors>
+
+                <!--
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="MouseMove">
+                        <i:InvokeCommandAction Command="{Binding MouseMoveOrientedCommand}" CommandParameter="{Binding }" />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+                -->
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="auto" />
+                        <RowDefinition Height="229*"/>
+                        <RowDefinition Height="88*"/>
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Canvas x:Name="CanvasBox" Width="{Binding ImageObject.ImageWidth}" Height="{Binding ImageObject.ImageHeight}" Margin="0,0,0,0" Grid.RowSpan="1" >
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseMove">
+                                <i:InvokeCommandAction Command="{Binding ImageObject.MouseMoveCommand}" CommandParameter="{Binding ElementName=areacanvas}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+
+                        <Image x:Name="ImageBox" Source="{Binding ImageObject.DisplayedImage}" Width="{Binding ImageObject.ImageWidth}" HorizontalAlignment="Left" VerticalAlignment="Top" 
+                               Stretch="Uniform" DockPanel.Dock="Top" Canvas.Left="0" Canvas.Top="0">
+                            <Image.RenderTransform>
+                                <ScaleTransform ScaleX="{Binding ResizeScale}" ScaleY="{Binding ResizeScale}" />
+                            </Image.RenderTransform>
+                        </Image>
+
+                        <ItemsControl ItemsSource="{Binding ImageObject.ViewableItems}" Height="{Binding ImageObject.DisplayedImage.Height}" Width="{Binding ImageObject.DisplayedImage.Width}" Margin="0,0,0,0">
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Canvas.Left" Value="{Binding ViewPoint.X}" />
+                                    <Setter Property="Canvas.Top" Value="{Binding ViewPoint.Y}" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <Canvas Width="auto" Height="auto" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Canvas x:Name="areacanvas" ContextMenuClosing="areacanvas_ContextMenuClosing" >
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="MouseLeftButtonDown">
+                                                <i:InvokeCommandAction Command="{Binding MousePushCommand}" CommandParameter="{Binding ElementName=areacanvas}" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding MouseReleaseCommand}" CommandParameter="{Binding ElementName=areacanvas}" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+
+                                        <Canvas.InputBindings>
+                                            <MouseBinding Gesture="RightClick" Command="{Binding RightClickCommand}" />
+                                        </Canvas.InputBindings>
+
+
+
+                                        <!--
+                                        スクロールすると画面に表示されっぱなしになる
+                                        解決策は書いているので読んでください
+                                        https://stackoverflow.com/questions/1600218/how-can-i-move-a-wpf-popup-when-its-anchor-element-moves
+                                        -->
+                                        <!--
+                                        <refctrl:FollowablePopup x:Name="area_popup" IsOpen="{Binding Viewpopup}" StaysOpen="True" Placement="Relative" PlacementRectangle="50,50,50,50" PlacementTarget="{Binding ElementName=areacanvas}" 
+                                                                 >
+                                            <Grid>
+                                                <refctrl:ImageViewerPopup Width="auto" Height="auto" MouseDown="mousemenuclick_event" />
+                                            </Grid>
+                                        </refctrl:FollowablePopup>
+                                        -->
+                                        <!-- 現状割と好きなGUI　ただし消えるのが問題あり -->
+                                        <!--
+                                        <Canvas.ContextMenu>
+                                            <ContextMenu>
+                                                <ContextMenu.Style>
+                                                    <Style TargetType="{x:Type ContextMenu}">
+                                                        <Setter Property="ItemsPanel" Value="{StaticResource MenuTPL}"/>
+                                                    </Style>
+                                                </ContextMenu.Style>
+                                                <MenuItem StaysOpenOnClick="True" Padding="0">
+                                                    <MenuItem.Header>
+                                                        <Grid>
+                                                            <refctrl:ImageViewerPopup Width="auto" Height="auto" MouseDown="mousemenuclick_event" />
+                                                        </Grid>
+                                                    </MenuItem.Header>
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </Canvas.ContextMenu>
+                                        -->
+                                        <Grid Width="auto" Height="auto" x:Name="DrawArea">
+                                            <ContentControl Content="{Binding Shape}" Visibility="{Binding IsVisible, Converter={StaticResource BoolVisibilityConverter}}" HorizontalAlignment="Left" VerticalAlignment="Top">
+
+                                            </ContentControl>
+
+                                            <ContentControl Content="{Binding TextLabel}" Visibility="{Binding IsVisible, Converter={StaticResource BoolVisibilityConverter}}" VerticalAlignment="{Binding VerticalAlignment}" HorizontalAlignment="{Binding HorizontalAlignment}"  />
+                                            <Grid.RenderTransform>
+                                                <RotateTransform Angle="{Binding AreaAngle}" 
+                                                                         CenterX="{Binding CenterPoint.X }"  
+                                                                         CenterY="{Binding CenterPoint.Y }"  />
+                                            </Grid.RenderTransform>
+                                        </Grid>
+                                        <ContentControl Content="{Binding StrokeShape}" Visibility="{Binding IsVisible, Converter={StaticResource BoolVisibilityConverter}}" Canvas.Left="{Binding StrokeShapeOffset.X}" Canvas.Top="{Binding StrokeShapeOffset.Y}">
+                                            <ContentControl.RenderTransform>
+                                                <RotateTransform Angle="{Binding AreaAngle}" 
+                                                                         CenterX="{Binding CenterPoint.X }"  
+                                                                         CenterY="{Binding CenterPoint.Y }"  />
+                                            </ContentControl.RenderTransform>
+                                        </ContentControl>
+
+
+                                        <!--
+                                        <refctrl:ImageViewerPopup x:Name="viewerpopup" Visibility="{Binding Viewpopup,Converter={StaticResource BoolVisibilityConverter}}" Canvas.Left="{Binding ActualWidth, ElementName=DrawArea}" Canvas.Top="{Binding ActualHeight, ElementName=DrawArea}" SizeChanged="viewerpopup_SizeChanged" >
+                                            <refctrl:ImageViewerPopup.RenderTransform>
+                                                <ScaleTransform 
+                                                    ScaleX="{Binding DataContext.ResizeRate, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" 
+                                                    ScaleY="{Binding DataContext.ResizeRate, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" />
+                                            </refctrl:ImageViewerPopup.RenderTransform>
+                                        </refctrl:ImageViewerPopup>
+                                        -->
+                                    </Canvas>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                            <ItemsControl.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="{Binding DataContext.ResizeScale, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" 
+                                                    ScaleY="{Binding DataContext.ResizeScale, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ItemsControl}}}" RenderOptions.BitmapScalingMode="NearestNeighbor" />
+                                </TransformGroup>
+                            </ItemsControl.RenderTransform>
+                        </ItemsControl>
+
+                        <Grid Visibility="{Binding IsViewedOriented, Converter={StaticResource BoolVisibilityConverter}}">
+                            <Canvas>
+                                <Line X1="0" Y1="{Binding OrientY}" X2="{Binding ImageObject.DisplayedImage.Width}" Y2="{Binding OrientY}"  Stroke="Red" StrokeThickness="{Binding ResizeRate}" />
+                                <Line Y1="0" X1="{Binding OrientX}" Y2="{Binding ImageObject.DisplayedImage.Height}" X2="{Binding OrientX}"  Stroke="Red" StrokeThickness="{Binding ResizeRate}" />
+                                <Ellipse Canvas.Left="{Binding OrientRoundX}" Canvas.Top="{Binding OrientRoundY}" Width="{Binding OrientRoundRadius}" Height="{Binding OrientRoundRadius}" Stroke="Red" StrokeThickness="{Binding ResizeRate}" />
+
+                                <StackPanel Canvas.Left="{Binding OrientX}" Canvas.Top="{Binding OrientY}" Width="auto" >
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="X = " FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                        <TextBox x:Name="ui_OrientXTextBox" Text="{Binding OrientTextX, UpdateSourceTrigger=Explicit}" FontSize="{Binding OrientFontSize}" Foreground="Red" Background="Transparent" PreviewTextInput="ui_OrientXTextBox_PreviewTextInput" KeyDown="ui_ExplicitTextBox_KeyDown"  />
+                                        <TextBlock Text=" mm" FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Y = " FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                        <TextBox x:Name="ui_OrientYTextBox" Text="{Binding OrientTextY, UpdateSourceTrigger=Explicit}" FontSize="{Binding OrientFontSize}" Foreground="Red" Background="Transparent" PreviewTextInput="ui_OrientXTextBox_PreviewTextInput" KeyDown="ui_ExplicitTextBox_KeyDown"  />
+                                        <TextBlock Text=" mm" FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Canvas>
+
+                            <Grid.LayoutTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="{Binding ResizeScale}" 
+                                                    ScaleY="{Binding ResizeScale}" />
+                                </TransformGroup>
+                            </Grid.LayoutTransform>
+                        </Grid>
+
+                        <Grid Visibility="{Binding IsViewedSecondOriented, Converter={StaticResource BoolVisibilityConverter}}">
+                            <Canvas>
+                                <Line X1="0" Y1="{Binding SecondOrientMouseOffsetY}" X2="{Binding ImageObject.DisplayedImage.Width}" Y2="{Binding SecondOrientMouseOffsetY}"  Stroke="OrangeRed" StrokeDashArray="3" StrokeThickness="{Binding ResizeRate}" />
+                                <Line Y1="0" X1="{Binding SecondOrientMouseOffsetX}" Y2="{Binding ImageObject.DisplayedImage.Height}" X2="{Binding SecondOrientMouseOffsetX}"  Stroke="OrangeRed" StrokeDashArray="3" StrokeThickness="{Binding ResizeRate}" />
+
+                                <Rectangle Canvas.Left="{Binding SecondOrientRectX}" Canvas.Top="{Binding SecondOrientRectY}" Width="{Binding OrientRoundRadius}" Height="{Binding OrientRoundRadius}" Stroke="OrangeRed" StrokeThickness="{Binding ResizeRate}" />
+
+                                <StackPanel Canvas.Left="{Binding SecondOrientMouseOffsetX}" Canvas.Top="{Binding SecondOrientTextPosY}" Width="auto" >
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="X = " FontSize="{Binding OrientFontSize}" Foreground="Blue"/>
+                                        <TextBox x:Name="ui_SecondOrientXTextBox" Text="{Binding SecondOrientTextX}" FontSize="{Binding OrientFontSize}" Foreground="Blue" Background="Transparent" PreviewTextInput="ui_OrientXTextBox_PreviewTextInput" KeyDown="ui_ExplicitTextBox_KeyDown"  />
+                                        <TextBlock Text=" mm" FontSize="{Binding OrientFontSize}" Foreground="Blue"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Y = " FontSize="{Binding OrientFontSize}" Foreground="Blue"/>
+                                        <TextBox x:Name="ui_SecondOrientYTextBox" Text="{Binding SecondOrientTextY}" FontSize="{Binding OrientFontSize}" Foreground="Blue" Background="Transparent" PreviewTextInput="ui_OrientXTextBox_PreviewTextInput" KeyDown="ui_ExplicitTextBox_KeyDown"  />
+                                        <TextBlock Text=" mm" FontSize="{Binding OrientFontSize}" Foreground="Blue"/>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Canvas.Left="{Binding SecondOrientMouseOffsetX}" Canvas.Top="{Binding SecondOrientMouseOffsetY}" Width="auto" >
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="X = " FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                        <TextBlock Text="{Binding SecondOrientActualX}" FontSize="{Binding OrientFontSize}" Foreground="Red" Background="Transparent" PreviewTextInput="ui_OrientXTextBox_PreviewTextInput" KeyDown="ui_ExplicitTextBox_KeyDown"  />
+                                        <TextBlock Text=" mm" FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Y = " FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                        <TextBlock Text="{Binding SecondOrientActualY}" FontSize="{Binding OrientFontSize}" Foreground="Red" Background="Transparent" PreviewTextInput="ui_OrientXTextBox_PreviewTextInput" KeyDown="ui_ExplicitTextBox_KeyDown"  />
+                                        <TextBlock Text=" mm" FontSize="{Binding OrientFontSize}" Foreground="Red"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Canvas>
+
+                            <Grid.LayoutTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="{Binding ResizeScale}" 
+                                                    ScaleY="{Binding ResizeScale}" />
+                                </TransformGroup>
+                            </Grid.LayoutTransform>
+                        </Grid>
+
+                    </Canvas>
+                </Grid>
+
+
+
+
+                <!--
+                <Canvas>
+
+                    <ItemsControl ItemsSource="{Binding ViewableItems}" Height="auto" Width="30" Margin="0,0,0,0" Canvas.Left="0" Canvas.Top="0">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <Canvas />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Rectangle Fill="Aqua" Width="100" Height="100" Canvas.Left="100" Canvas.Top="100" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                </Canvas>
+                -->
+
+            </ScrollViewer>
+
+        </Grid>
+
+
+    </DockPanel>
+</UserControl>

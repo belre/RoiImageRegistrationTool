@@ -1,0 +1,43 @@
+﻿<UserControl x:Class="ClipXmlReader.View.ImageHorizontalScaler"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ClipXmlReader.ViewModel"
+             mc:Ignorable="d" Height="30" Width="463">
+
+    <UserControl.DataContext>
+        <local:ImageScalerViewModel />
+    </UserControl.DataContext>
+    
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolVisibilityConverter" />
+    </UserControl.Resources>
+
+
+    <Grid Margin="0,0,0,0" Grid.Column="1" >
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="{Binding Margin}" />
+        </Grid.ColumnDefinitions>
+        
+        <Border BorderBrush="Black" BorderThickness="1" >
+            <ItemsControl x:Name="numberMajorTicks" ItemsSource="{Binding Scales}" Width="auto" Height="30" Margin="0,0,0,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Rows="1" Columns="{Binding Scales.Count}" Width="{Binding ActualWidth, ElementName=numberMajorTicks}" Height="auto" HorizontalAlignment="Left" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel x:Name="internalDockPanel">
+                            <Border Width="2" Height="Auto" Background="Black" DockPanel.Dock="Left" Margin="0,3,0,3" Visibility="{Binding IsMajorTicks, Converter={StaticResource BoolVisibilityConverter}}" />
+                            <TextBlock Text="{Binding ScaleVal}" Grid.Row="0" DockPanel.Dock="Top" VerticalAlignment="Top" Visibility="{Binding IsMajorTicks, Converter={StaticResource BoolVisibilityConverter}}" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+    </Grid>
+
+</UserControl>
